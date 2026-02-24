@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beyin Felci Risk Tahmini</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #e8f4f8;
+            --bg-card: #0d47a1;
+            --accent: #42a5f5;
+            --accent-hover: #64b5f6;
+            --text-primary: #e3f2fd;
+            --text-muted: #90caf9;
+            --border: #1976d2;
+            --risk-high: #ff6b6b;
+            --risk-low: #69db7c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: linear-gradient(160deg, #0d47a1 0%, #1565c0 50%, #1976d2 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        .wrapper {
+            max-width: 680px;
+            margin: 0 auto;
+            background: #f5f9fc;
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            padding: 2.5rem;
+        }
+
+        .container {
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .brain-icon {
+            font-size: 6.5rem;
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1565c0;
+        }
+
+        header p {
+            margin-top: 0.5rem;
+            color: #5c6bc0;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: #e3f2fd;
+            border-radius: 16px;
+            border: 2px solid #90caf9;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #37474f;
+        }
+
+        input, select {
+            padding: 0.7rem 1rem;
+            border: 2px solid #90caf9;
+            border-radius: 12px;
+            background: #ffffff;
+            color: #1a237e;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #1976d2;
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.25);
+        }
+
+        input::placeholder {
+            color: #78909c;
+            opacity: 0.8;
+        }
+
+        .radio-box {
+            background: #ffffff;
+            border: 2px solid #90caf9;
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            margin-top: 0.3rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .radio-box:focus-within {
+            border-color: #1976d2;
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.25);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            color: #1a237e;
+        }
+
+        .radio-group input {
+            width: auto;
+            accent-color: #1976d2;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #42a5f5, #64b5f6);
+            color: #0d47a1;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result-card {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .result-card.visible {
+            display: block;
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            color: #37474f;
+            margin-bottom: 0.75rem;
+        }
+
+        .result-value-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            border-radius: 14px;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value-wrap.risk-high {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid var(--risk-high);
+        }
+
+        .result-value-wrap.risk-low {
+            background: rgba(105, 219, 124, 0.2);
+            border: 2px solid var(--risk-low);
+        }
+
+        .result-icon {
+            font-size: 2rem;
+            line-height: 1;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .result-value.risk-high {
+            color: var(--risk-high);
+        }
+
+        .result-value.risk-low {
+            color: var(--risk-low);
+        }
+
+        .probability-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            margin: 1rem 0;
+            overflow: hidden;
+        }
+
+        .probability-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease-out;
+        }
+
+        .probability-fill.risk-high {
+            background: linear-gradient(90deg, var(--risk-high), #ff8787);
+        }
+
+        .probability-fill.risk-low {
+            background: linear-gradient(90deg, var(--risk-low), #69db7c);
+        }
+
+        .probability-text {
+            font-size: 0.85rem;
+            color: #37474f;
+        }
+
+        .error-message {
+            background: rgba(255, 107, 107, 0.15);
+            color: var(--risk-high);
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .error-message.visible {
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .loading.visible {
+            display: block;
+        }
+
+        .loading p {
+            color: #37474f;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="container">
+            <header>
+                <div class="brain-icon" aria-hidden="true">🧠</div>
+                <h1>Beyin Felci Risk Tahmini</h1>
+                <p>Hasta bilgilerini girin, risk analizi yapılsın</p>
+            </header>
+
+            <div class="card">
+            <form id="strokeForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="gender">Cinsiyet</label>
+                        <select id="gender" name="gender" required>
+                            <option value="">Seçiniz</option>
+                            <option value="Male">Erkek</option>
+                            <option value="Female">Kadın</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="age">Yaş</label>
+                        <input type="number" id="age" name="age" min="0" max="120" step="0.1" placeholder="örn: 45" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hipertansiyon</label>
+                        <div class="radio-box">
+                            <div class="radio-group">
+                                <label><input type="radio" name="hypertension" value="0" checked> Hayır</label>
+                                <label><input type="radio" name="hypertension" value="1"> Evet</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Kalp Hastalığı</label>
+                        <div class="radio-box">
+                            <div class="radio-group">
+                                <label><input type="radio" name="heart_disease" value="0" checked> Hayır</label>
+                                <label><input type="radio" name="heart_disease" value="1"> Evet</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="ever_married">Evli mi?</label>
+                        <select id="ever_married" name="ever_married" required>
+                            <option value="">Seçiniz</option>
+                            <option value="Yes">Evet</option>
+                            <option value="No">Hayır</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="work_type">İş Türü</label>
+                        <select id="work_type" name="work_type" required>
+                            <option value="">Seçiniz</option>
+                            <option value="Private">Özel</option>
+                            <option value="Self-employed">Serbest Meslek</option>
+                            <option value="Govt_job">Devlet</option>
+                            <option value="children">Çocuk</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="Residence_type">Yaşam Yeri</label>
+                        <select id="Residence_type" name="Residence_type" required>
+                            <option value="">Seçiniz</option>
+                            <option value="Urban">Şehir</option>
+                            <option value="Rural">Kırsal</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="avg_glucose_level">Ort. Glikoz Seviyesi (mg/dL)</label>
+                        <input type="number" id="avg_glucose_level" name="avg_glucose_level" min="0" step="0.01" placeholder="örn: 95.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bmi">BMI (Vücut Kitle İndeksi)</label>
+                        <input type="number" id="bmi" name="bmi" min="0" max="100" step="0.1" placeholder="örn: 28.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="smoking_status">Sigara Durumu</label>
+                        <select id="smoking_status" name="smoking_status" required>
+                            <option value="">Seçiniz</option>
+                            <option value="never smoked">Hiç içmedi</option>
+                            <option value="formerly smoked">Bıraktı</option>
+                            <option value="smokes">İçiyor</option>
+                            <option value="Unknown">Bilinmiyor</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Tahmin Yap</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analiz yapılıyor...</p>
+        </div>
+
+        <div class="card result-card" id="resultCard">
+            <div class="result-label">Tahmin Sonucu</div>
+            <div class="result-value-wrap" id="resultWrap">
+                <span class="result-icon" id="resultIcon">✓</span>
+                <span class="result-value" id="resultLabel">-</span>
+            </div>
+            <div class="probability-bar">
+                <div class="probability-fill" id="probabilityFill" style="width: 0%"></div>
+            </div>
+            <div class="probability-text" id="probabilityText">Risk olasılığı: %0</div>
+        </div>
+
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('strokeForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const loading = document.getElementById('loading');
+        const resultCard = document.getElementById('resultCard');
+        const resultWrap = document.getElementById('resultWrap');
+        const resultIcon = document.getElementById('resultIcon');
+        const resultLabel = document.getElementById('resultLabel');
+        const probabilityFill = document.getElementById('probabilityFill');
+        const probabilityText = document.getElementById('probabilityText');
+        const errorMessage = document.getElementById('errorMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMessage.classList.remove('visible');
+            resultCard.classList.remove('visible');
+
+            const formData = new FormData(form);
+            const data = {
+                gender: formData.get('gender'),
+                age: parseFloat(formData.get('age')),
+                hypertension: parseInt(formData.get('hypertension')),
+                heart_disease: parseInt(formData.get('heart_disease')),
+                ever_married: formData.get('ever_married'),
+                work_type: formData.get('work_type'),
+                Residence_type: formData.get('Residence_type'),
+                avg_glucose_level: parseFloat(formData.get('avg_glucose_level')),
+                bmi: parseFloat(formData.get('bmi')),
+                smoking_status: formData.get('smoking_status')
+            };
+
+            submitBtn.disabled = true;
+            loading.classList.add('visible');
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.detail || 'Bir hata oluştu');
+                }
+
+                const prob = result.stroke_probability;
+                const prediction = result.prediction;
+
+                resultLabel.textContent = result.prediction_label;
+                resultLabel.className = 'result-value ' + (prediction === 1 ? 'risk-high' : 'risk-low');
+                resultWrap.className = 'result-value-wrap ' + (prediction === 1 ? 'risk-high' : 'risk-low');
+                resultIcon.textContent = prediction === 1 ? '✕' : '✓';
+                resultIcon.setAttribute('aria-hidden', 'true');
+
+                probabilityFill.style.width = (prob * 100) + '%';
+                probabilityFill.className = 'probability-fill ' + (prediction === 1 ? 'risk-high' : 'risk-low');
+                probabilityText.textContent = `Risk olasılığı: %${(prob * 100).toFixed(2)}`;
+
+                resultCard.classList.add('visible');
+            } catch (err) {
+                errorMessage.textContent = err.message || 'Tahmin sırasında bir hata oluştu.';
+                errorMessage.classList.add('visible');
+            } finally {
+                submitBtn.disabled = false;
+                loading.classList.remove('visible');
+            }
+        });
+    </script>
+</body>
+</html>
